@@ -66,7 +66,10 @@ try
         !string.IsNullOrWhiteSpace(options.SteamPath) &&
         !string.IsNullOrWhiteSpace(options.SelectedProfileName) &&
         !string.IsNullOrWhiteSpace(options.NewProfileName))
-        steamService.BackupProfile(options.SteamPath, options.SelectedProfileName, options.NewProfileName);
+    {
+        steamService.TryGetSelectedProfile(options.SteamPath, out var realCurrentProfileName);
+        steamService.BackupProfile(options.SteamPath, options.SelectedProfileName, options.NewProfileName, realCurrentProfileName);
+    }
 
     if (options.StartSteamService && !string.IsNullOrWhiteSpace(options.SteamPath))
         steamService.StartSteamService(options.SteamPath);

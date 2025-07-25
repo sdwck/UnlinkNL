@@ -106,7 +106,7 @@ public class SteamService
         return false;
     }
 
-    public void BackupProfile(string steamPath, string previousProfileName, string profileName)
+    public void BackupProfile(string steamPath, string previousProfileName, string profileName, string realCurrentProfileName)
     {
         if (string.IsNullOrWhiteSpace(steamPath)) return;
 
@@ -130,6 +130,12 @@ public class SteamService
             var steamFolderPath = Path.Combine(steamPath, folder);
             var prevBackupFolderPath = Path.Combine(prevProfileBackupRoot, folder);
             var backupFolderPath = Path.Combine(profileBackupRoot, folder);
+            
+            if (previousProfileName != realCurrentProfileName && IsSymbolicLink(steamFolderPath))
+            {
+                if (Directory.Exists(steamFolderPath))
+                    Directory.Delete(Path.Combine(steamFolderPath), true);
+            }
 
             if (IsSymbolicLink(steamFolderPath))
             {
@@ -200,18 +206,27 @@ public class SteamService
             return false;
         }
 
-        var realPath = ProcessUtils.GetRealPath(configPath);
-        var pathParts = realPath.Split(Path.DirectorySeparatorChar);
-        var configIndex = Array.LastIndexOf(pathParts, "config");
-
-        if (configIndex > 0)
+        try
         {
-            selectedProfileName = pathParts[configIndex - 1];
-            return true;
-        }
+            var realPath = ProcessUtils.GetRealPath(configPath);
+            var pathParts = realPath.Split(Path.DirectorySeparatorChar);
+            var configIndex = Array.LastIndexOf(pathParts, "config");
 
-        selectedProfileName = string.Empty;
-        return false;
+            if (configIndex > 0)
+            {
+                selectedProfileName = pathParts[configIndex - 1];
+                return true;
+            }
+
+            selectedProfileName = string.Empty;
+            return false;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Failed to get selected profile: {ex.Message}");
+            selectedProfileName = string.Empty;
+            return false;
+        }
     }
 
     private static bool IsSymbolicLink(string path)

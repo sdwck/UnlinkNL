@@ -13,14 +13,14 @@ const ProfileDetailPage = () => {
     const { profileId } = useParams();
     const navigate = useNavigate();
     const { enqueueSnackbar } = useSnackbar();
-    
+
     const [profile, setProfile] = useState<IProfile | null>(null);
     const [accounts, setAccounts] = useState<ISteamAccount[]>([]);
     const [loading, setLoading] = useState(true);
     const [deleteAccountDialog, setDeleteAccountDialog] = useState<{ open: boolean, account: ISteamAccount | null }>({ open: false, account: null });
 
-    const debouncedUpdateName = useCallback(debounce((id: string, newName: string) => {
-        window.electronAPI.updateProfile(id, { name: newName });
+    const debouncedUpdateName = useCallback(debounce((id: string, updates: Partial<IProfile>) => {
+        window.electronAPI.updateProfile(id, updates);
     }, 500), []);
 
     const fetchProfileData = useCallback(async () => {
@@ -44,7 +44,7 @@ const ProfileDetailPage = () => {
             setLoading(false);
         }
     }, [profileId, navigate, enqueueSnackbar]);
-    
+
     useEffect(() => {
         fetchProfileData();
     }, [fetchProfileData]);
@@ -53,7 +53,7 @@ const ProfileDetailPage = () => {
         if (!profile) return;
         const newName = event.target.value;
         setProfile({ ...profile, name: newName });
-        debouncedUpdateName(profile.id, newName);
+        debouncedUpdateName(profile.id, { name: newName });
     };
 
     const handleAvatarUpload = async () => {
@@ -63,13 +63,13 @@ const ProfileDetailPage = () => {
             try {
                 await window.electronAPI.setProfileAvatar(profile.id, filePath);
                 enqueueSnackbar('Avatar updated!', { variant: 'success' });
-                window.location.reload();
+                fetchProfileData();
             } catch (e: any) {
                 enqueueSnackbar(`Failed to update avatar: ${e.message}`, { variant: 'error' });
             }
         }
     };
-    
+
     const handleDeleteAccount = async () => {
         if (!profile || !deleteAccountDialog.account) return;
         try {
@@ -81,9 +81,13 @@ const ProfileDetailPage = () => {
             enqueueSnackbar(`Failed to delete account: ${e.message}`, { variant: 'error' });
         }
     };
-    
+
     if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress /></Box>;
     if (!profile) return <Typography>Profile not found.</Typography>;
+
+    const avatarSrc = profile.avatar
+        ? profile.avatar
+        : `https://i.pravatar.cc/150?u=${profile.id}`;
 
     return (
         <Box>
@@ -92,7 +96,7 @@ const ProfileDetailPage = () => {
                 <CardContent>
                     <Box display="flex" alignItems="center" gap={3}>
                         <Box position="relative">
-                            <Avatar src={`https://i.pravatar.cc/150?u=${profile.id}&t=${new Date().getTime()}`} sx={{ width: 100, height: 100 }} />
+                            <Avatar src={avatarSrc} sx={{ width: 100, height: 100 }} />
                             <IconButton onClick={handleAvatarUpload} size="small" sx={{ position: 'absolute', bottom: 0, right: 0, bgcolor: 'background.paper' }}>
                                 <EditIcon />
                             </IconButton>
@@ -121,7 +125,7 @@ const ProfileDetailPage = () => {
                     </List>
                 </CardContent>
             </Card>
-            <DeleteConfirmationDialog 
+            <DeleteConfirmationDialog
                 open={deleteAccountDialog.open}
                 onClose={() => setDeleteAccountDialog({ open: false, account: null })}
                 onConfirm={handleDeleteAccount}

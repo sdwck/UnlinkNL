@@ -30,6 +30,28 @@ public class SettingsTransferService
             _logger.LogInformation("Profile names are the same, skipping settings transfer.");
             return;
         }
+        
+        var newProfileUserdata = Path.Combine(BackupRoot, profileName, "userdata");
+        if (!Directory.Exists(newProfileUserdata))
+        {
+            _logger.LogInformation("New profile userdata directory does not exist, skipping settings transfer.");
+            return;
+        }
+
+        var newProfileUserdataDirectories = Directory.GetDirectories(newProfileUserdata);
+        if (newProfileUserdataDirectories.Length == 0)
+        {
+            _logger.LogInformation("No account directories found in new profile userdata, skipping settings transfer.");
+            return;
+        }
+
+        var doesGameExist = newProfileUserdataDirectories
+            .Any(dir => Directory.Exists(Path.Combine(dir, appId)));
+        if (!doesGameExist)
+        {
+            _logger.LogInformation($"Game with ID {appId} does not exist in new profile userdata, skipping settings transfer.");
+            return;
+        }
 
         var oldProcesses = Process.GetProcesses();
         await StartAppAsync(appId);
@@ -68,7 +90,7 @@ public class SettingsTransferService
 
         if (!isAppStarted)
         {
-            _logger.LogError($"App did not start within the period ({timeout.TotalMinutes}/{timeout.TotalSeconds})");
+            _logger.LogError($"App did not start within the period ({timeout.TotalSeconds}/{timeout.TotalSeconds})");
             return;
         }
 

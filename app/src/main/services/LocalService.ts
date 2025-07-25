@@ -4,6 +4,7 @@ import fs from 'fs/promises';
 import { IProfile, ISteamAccount } from '../../shared/types';
 import { profileStore } from '../store/ProfileStore';
 import { IGame } from '../../shared/types';
+import sharp from 'sharp';
 
 export class LocalService {
   constructor(private mainWindow: BrowserWindow) { }
@@ -44,10 +45,12 @@ export class LocalService {
       const profiles: IProfile[] = await Promise.all(
         profileDirs.map(async (dir): Promise<IProfile> => {
           const accounts = await this.getAccountsForProfile(dir.name);
+          const avatarPath = await this.findAvatarForProfile(dir.name);
           return {
             id: dir.name,
             name: dir.name.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase()),
-            steamAccounts: accounts
+            steamAccounts: accounts,
+            avatar: avatarPath,
           };
         })
       );
@@ -79,22 +82,36 @@ export class LocalService {
 
   public async initializeProfiles() {
     try {
-      const localProfiles = await this.getLocalProfiles();
+      const profilesRoot = this.getProfilesRoot();
+      await fs.mkdir(profilesRoot, { recursive: true });
+
+      const localDirs = await fs.readdir(profilesRoot, { withFileTypes: true });
+      const localProfileIds = new Set(localDirs.filter(d => d.isDirectory()).map(d => d.name));
       const storedProfiles = profileStore.getAll();
       const storedProfilesMap = new Map(storedProfiles.map(p => [p.id, p]));
 
-      const finalProfiles = localProfiles.map(localProfile => {
-        const storedVersion = storedProfilesMap.get(localProfile.id);
+      const finalProfiles: IProfile[] = [];
+
+      for (const profileId of localProfileIds) {
+        const storedVersion = storedProfilesMap.get(profileId);
+        const accounts = await this.getAccountsForProfile(profileId);
+        const avatarBase64 = await this.getAvatarAsBase64(profileId);
 
         if (storedVersion) {
-          return {
+          finalProfiles.push({
             ...storedVersion,
-            steamAccounts: localProfile.steamAccounts,
-          };
+            steamAccounts: accounts,
+            avatar: avatarBase64,
+          });
         } else {
-          return localProfile;
+          finalProfiles.push({
+            id: profileId,
+            name: profileId.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase()),
+            steamAccounts: accounts,
+            avatar: avatarBase64,
+          });
         }
-      });
+      }
 
       profileStore.set(finalProfiles);
       this.log('Profile store synchronized with local profile directories.');
@@ -103,17 +120,66 @@ export class LocalService {
     }
   }
 
-  public async setProfileAvatar(profileId: string, sourcePath: string): Promise<string> {
+  public async setProfileAvatar(profileId: string, sourcePath: string): Promise<void> {
     const profileDir = path.join(this.getProfilesRoot(), profileId);
-    const extension = path.extname(sourcePath);
-    const destPath = path.join(profileDir, `avatar${extension}`);
+    const newAvatarFileName = `avatar.jpg`;
+    const destPath = path.join(profileDir, newAvatarFileName);
 
     try {
-      await fs.copyFile(sourcePath, destPath);
-      return destPath;
+      await fs.mkdir(profileDir, { recursive: true });
+      const processedImageBuffer = await sharp(sourcePath)
+        .resize(512, 512, { fit: 'cover' })
+        .jpeg({ quality: 90 })
+        .toBuffer();
+
+      await fs.writeFile(destPath, processedImageBuffer);
+
+      const base64 = processedImageBuffer.toString('base64');
+      const avatarDataUrl = `data:image/jpeg;base64,${base64}`;
+      profileStore.update(profileId, { avatar: avatarDataUrl });
     } catch (error) {
       this.log(`Failed to set avatar for profile ${profileId}: ${error.message}`);
       throw error;
     }
+  }
+
+  private async getAvatarAsBase64(profileId: string): Promise<string | null> {
+    const profileDir = path.join(this.getProfilesRoot(), profileId);
+    try {
+      const files = await fs.readdir(profileDir);
+      const avatarFile = files.find(file => file.startsWith('avatar.'));
+      if (avatarFile) {
+        const filePath = path.join(profileDir, avatarFile);
+        const fileBuffer = await fs.readFile(filePath);
+        const base64 = fileBuffer.toString('base64');
+        const extension = path.extname(avatarFile).slice(1) || 'jpg';
+        return `data:image/${extension};base64,${base64}`;
+      }
+    } catch (error) {
+      if (error.code !== 'ENOENT') {
+        this.log(`Error reading avatar for ${profileId}: ${error.message}`);
+      }
+    }
+    return null;
+  }
+
+  private async findAvatarForProfile(profileId: string): Promise<string | null> {
+    const profileDir = path.join(this.getProfilesRoot(), profileId);
+    try {
+      const files = await fs.readdir(profileDir);
+      const avatarFile = files.find(file => file.startsWith('avatar.'));
+      if (avatarFile) {
+        const filePath = path.join(profileDir, avatarFile);
+        const fileBuffer = await fs.readFile(filePath);
+        const base64 = fileBuffer.toString('base64');
+        const extension = path.extname(avatarFile).slice(1);
+        return `data:image/${extension};base64,${base64}`;
+      }
+    } catch (error) {
+      if (error.code !== 'ENOENT') {
+        this.log(`Error finding avatar for ${profileId}: ${error.message}`);
+      }
+    }
+    return null;
   }
 }

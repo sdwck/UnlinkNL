@@ -10,11 +10,13 @@ export const electronAPI = {
 
   getAllProfiles: (): Promise<IProfile[]> => ipcRenderer.invoke('profiles:get-all'),
   addProfile: (profile: IProfile): Promise<IProfile> => ipcRenderer.invoke('profiles:add', profile),
+  createProfile: (name: string): Promise<IProfile> => ipcRenderer.invoke('profiles:create', name),
   deleteProfile: (profileId: string): Promise<void> => ipcRenderer.invoke('profiles:delete', profileId),
   updateProfile: (profileId: string, updates: Partial<IProfile>): Promise<void> => ipcRenderer.invoke('profiles:update', profileId, updates),
   setProfileAvatar: (profileId: string, sourcePath: string): Promise<string> => ipcRenderer.invoke('profiles:set-avatar', profileId, sourcePath),
   deleteAccount: (profileId: string, accountId: string): Promise<void> => ipcRenderer.invoke('accounts:delete', profileId, accountId),
   showOpenDialog: (): Promise<string | null> => ipcRenderer.invoke('app:show-open-dialog'),
+  readFileAsBase64: (filePath: string): Promise<string | null> => ipcRenderer.invoke('app:read-file-as-base64', filePath),
   getAccountsForProfile: (profileId: string): Promise<ISteamAccount[]> => ipcRenderer.invoke('profiles:get-accounts', profileId),
   getGamesForAccount: (profileId: string, accountId: string): Promise<IGame[]> => ipcRenderer.invoke('profiles:get-games', profileId, accountId),
 
@@ -24,6 +26,12 @@ export const electronAPI = {
   getSelectedProfileFromCli: (): Promise<string | null> => ipcRenderer.invoke('app:get-selected-profile-from-cli'),
   selectSteamPathDialog: (): Promise<string | null> => ipcRenderer.invoke('app:select-steam-path-dialog'),
 
+  onProfilesChanged: (callback: () => void) => {
+    ipcRenderer.on('profiles:changed', callback);
+    return () => {
+      ipcRenderer.removeListener('profiles:changed', callback);
+    };
+  },
   onUnlinkStart: (callback: () => void) => {
     ipcRenderer.on('unlink:start', callback);
     return () => ipcRenderer.removeListener('unlink:start', callback);

@@ -19,10 +19,8 @@
     }
   },
   "include": [
+    "webpack.plugins.ts",
     "src/renderer/**/*",
     "src/shared/**/*"
-  ],
-  "exclude": [
-    "api/"
   ]
 }

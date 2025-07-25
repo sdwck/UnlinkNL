@@ -12,13 +12,22 @@ interface Props {
 
 const ProfileContextMenu = ({ anchorEl, onClose, onEdit, onDelete }: Props) => {
   return (
-    <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={onClose}>
-      <MenuItem onClick={onEdit}>
+    <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={onClose} PaperProps={{
+      sx: {
+        backgroundColor: '#000',
+        border: '1px solid rgba(255, 255, 255, 0.12)',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
+        '& .MuiList-root': {
+          padding: 0
+        }
+      },
+    }}>
+      <MenuItem onClick={onEdit} sx={{ '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.04)' }, paddingTop: '8px', paddingBottom: '8px' }}>
         <ListItemIcon><EditIcon fontSize="small" /></ListItemIcon>
         <ListItemText>Edit Profile</ListItemText>
       </MenuItem>
-      <Divider />
-      <MenuItem onClick={onDelete} sx={{ color: 'error.main' }}>
+      <Divider sx={{ my: 0.5, borderColor: 'rgba(255, 255, 255, 0.12)', margin: '0 !important' }} />
+      <MenuItem onClick={onDelete} sx={{ color: 'error.main', '&:hover': { backgroundColor: 'rgba(244, 67, 54, 0.15)' }, paddingTop: '8px', paddingBottom: '8px' }}>
         <ListItemIcon><DeleteIcon fontSize="small" color="error" /></ListItemIcon>
         <ListItemText>Delete Profile</ListItemText>
       </MenuItem>

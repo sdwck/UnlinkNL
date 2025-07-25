@@ -9,4 +9,5 @@ export interface IProfile {
   id: string;
   name: string;
   steamAccounts: ISteamAccount[];
+  avatar?: string | null;
 }

@@ -18,6 +18,7 @@ const schema: Schema<ProfileStoreSchema> = {
         id: { type: 'string' },
         name: { type: 'string' },
         steamAccounts: { type: 'array', default: [] },
+        avatar: { type: ['string', 'null'], default: null }
       },
       required: ['id', 'name'],
     },

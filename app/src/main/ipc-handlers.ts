@@ -16,6 +16,12 @@ interface AppServices {
 export function registerIpcHandlers(services: AppServices) {
     const { mainWindow, cliService, localService } = services;
 
+    const notifyProfilesChanged = () => {
+        BrowserWindow.getAllWindows().forEach(win => {
+            win.webContents.send('profiles:changed');
+        });
+    };
+
     ipcMain.handle('settings:get', () => settingsStore.getSettings());
     ipcMain.handle('settings:save', (event, settings: Partial<IAppSettings>) => {
         settingsStore.saveSettings(settings);
@@ -24,19 +30,41 @@ export function registerIpcHandlers(services: AppServices) {
     ipcMain.handle('profiles:get-all', () => profileStore.getAll());
 
     ipcMain.handle('profiles:add', (event, profile: IProfile): IProfile => {
+        notifyProfilesChanged();
         return profileStore.add(profile);
     });
 
-    ipcMain.handle('profiles:update', (event, profileId: string, newName: string) => profileStore.update(profileId, { name: newName }));
-    ipcMain.handle('profiles:set-avatar', (event, profileId: string, sourcePath: string) => services.localService.setProfileAvatar(profileId, sourcePath));
+    ipcMain.handle('profiles:create', async (event, profileName: string) => {
+        const settings = settingsStore.getSettings();
+        const newProfileData = await services.cliService.createProfile(profileName, settings);
+
+        const newProfile: IProfile = {
+            ...newProfileData,
+            steamAccounts: [],
+        };
+        profileStore.add(newProfile);
+        return newProfile;
+    });
+
+    ipcMain.handle('profiles:update', (event, profileId: string, updates: Partial<IProfile>) => {
+        profileStore.update(profileId, updates);
+        notifyProfilesChanged();
+    });
+    ipcMain.handle('profiles:set-avatar', (event, profileId: string, sourcePath: string) => {
+        const result = services.localService.setProfileAvatar(profileId, sourcePath)
+        notifyProfilesChanged();
+        return result;
+    });
     ipcMain.handle('profiles:delete', async (event, profileId: string) => {
         await services.cliService.deleteProfile(profileId);
         profileStore.delete(profileId);
+        notifyProfilesChanged();
     });
 
     ipcMain.handle('accounts:delete', async (event, profileId: string, accountId: string) => {
         await services.cliService.deleteAccount(profileId, accountId);
         profileStore.deleteAccount(profileId, accountId);
+        notifyProfilesChanged();
     });
     ipcMain.handle('app:show-open-dialog', async () => {
         const result = await dialog.showOpenDialog({
@@ -57,6 +85,18 @@ export function registerIpcHandlers(services: AppServices) {
     ipcMain.handle('app:run-unlink', async (event, options: CliRunOptions) => {
         const settings = settingsStore.getSettings();
         await cliService.runUnlink(settings, options);
+    });
+
+    ipcMain.handle('app:read-file-as-base64', async (event, filePath: string) => {
+        try {
+            const buffer = await fs.readFile(filePath);
+            const base64 = buffer.toString('base64');
+            const extension = path.extname(filePath).slice(1);
+            return `data:image/${extension};base64,${base64}`;
+        } catch (error) {
+            console.error(`Failed to read file as base64: ${filePath}`, error);
+            return null;
+        }
     });
 
     ipcMain.handle('app:get-steam-path-from-cli', async () => {

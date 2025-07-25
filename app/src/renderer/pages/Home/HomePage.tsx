@@ -21,6 +21,7 @@ const HomePage = () => {
   const [hoveredProfileId, setHoveredProfileId] = useState<string | null>(null);
   const [contextMenu, setContextMenu] = useState<{ anchor: null | HTMLElement, profile: IProfile | null }>({ anchor: null, profile: null });
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean, profile: IProfile | null }>({ open: false, profile: null });
+  const [imageRefreshKey, setImageRefreshKey] = useState(Date.now());
 
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
@@ -44,6 +45,15 @@ const HomePage = () => {
   useEffect(() => {
     fetchData();
 
+    const handleProfilesChanged = async () => {
+      console.log('Profiles changed event received. Fetching new data...');
+      await fetchData();
+      console.log('Data fetched. Updating image refresh key.');
+      setImageRefreshKey(Date.now());
+    };
+
+    const removeProfilesChangedListener = window.electronAPI.onProfilesChanged(handleProfilesChanged);
+
     const removeStartListener = window.electronAPI.onUnlinkStart(() => {
       setIsUnlinking(true);
       setLogs([]);
@@ -66,6 +76,7 @@ const HomePage = () => {
     });
 
     return () => {
+      removeProfilesChangedListener();
       removeStartListener();
       removeLogListener();
       removeFinishListener();
@@ -116,6 +127,9 @@ const HomePage = () => {
       <Grid container spacing={3}>
         {profiles.map((profile) => {
           const isActive = settings?.selectedProfileId === profile.id;
+          const avatarSrc = profile.avatar
+            ? profile.avatar
+            : `https://i.pravatar.cc/400?u=${encodeURIComponent(profile.id)}`;
           return (
             <Grid size={{ xs: 6, sm: 4, md: 3, lg: 2 }} key={profile.id}>
               <Card
@@ -143,8 +157,9 @@ const HomePage = () => {
                   disabled={isUnlinking}
                 >
                   <CardMedia
+                    key={imageRefreshKey}
                     component="img"
-                    image={`https://i.pravatar.cc/400?u=${encodeURIComponent(profile.id)}`}
+                    image={avatarSrc}
                     alt={profile.name}
                     sx={{ height: '100%', width: '100%', objectFit: 'cover' }}
                   />
@@ -214,7 +229,7 @@ const HomePage = () => {
       />
 
       <Fade in={logs.length > 0 || isUnlinking}>
-        <Box sx={{ height: '100%', maxHeight: '35vh', minHeight: 195, mt: 2 }}>
+        <Box sx={{ height: '100%', minHeight: 195, mt: 2 }}>
           <LogPanel logs={logs} />
         </Box>
       </Fade>

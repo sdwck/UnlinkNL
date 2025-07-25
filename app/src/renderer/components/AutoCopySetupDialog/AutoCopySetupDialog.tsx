@@ -127,16 +127,22 @@ const AutoCopySetupDialog = ({ open, onClose, onSave, profiles }: Props) => {
             case 0:
                 return (
                     <Grid container spacing={2} sx={{ mt: 1 }}>
-                        {profiles.map(profile => (
-                            <Grid size={{ xs: 6, md: 4 }} key={profile.id}>
-                                <SelectionCard
-                                    id={profile.id}
-                                    name={profile.name}
-                                    imageUrl={`https://i.pravatar.cc/250?u=${profile.id}`}
-                                    onClick={() => handleProfileSelect(profile)}
-                                />
-                            </Grid>
-                        ))}
+                        {profiles.map(profile => {
+                            const imageUrl = profile.avatar
+                                ? profile.avatar
+                                : `https://i.pravatar.cc/250?u=${profile.id}`;
+
+                            return (
+                                <Grid size={{ xs: 6, md: 4 }} key={profile.id}>
+                                    <SelectionCard
+                                        id={profile.id}
+                                        name={profile.name}
+                                        imageUrl={imageUrl}
+                                        onClick={() => handleProfileSelect(profile)}
+                                    />
+                                </Grid>
+                            );
+                        })}
                     </Grid>
                 );
             case 1:
