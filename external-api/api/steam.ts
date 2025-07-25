@@ -16,14 +16,14 @@ const handler = async (req: VercelRequest, res: VercelResponse) => {
     }
 
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-client-secret-key');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-client-key');
 
     if (req.method === 'OPTIONS') {
         return res.status(204).end();
     }
 
-    const serverKey = process.env.CLIENT_SECRET_KEY;
-    const clientKey = req.headers['x-client-secret-key'];
+    const serverKey = process.env.CLIENT_KEY;
+    const clientKey = req.headers['x-client-key'];
 
     if (!serverKey || clientKey !== serverKey) {
         return res.status(403).json({ error: 'Forbidden: Invalid or missing client key.' });
