@@ -3,16 +3,30 @@ import fetch from 'node-fetch';
 
 const cache = new Map<string, { data: any, expiry: number }>();
 const CACHE_DURATION_MS = 10 * 60 * 1000;
-
 const STEAM_ID_64_BASE = BigInt('76561197960265728');
 
 const handler = async (req: VercelRequest, res: VercelResponse) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    const allowedOrigins = [
+        'http://localhost:3000',
+        'app://.'
+    ];
+    const origin = req.headers.origin;
+    if (origin && allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-client-secret-key');
 
     if (req.method === 'OPTIONS') {
         return res.status(204).end();
+    }
+
+    const serverKey = process.env.CLIENT_SECRET_KEY;
+    const clientKey = req.headers['x-client-secret-key'];
+
+    if (!serverKey || clientKey !== serverKey) {
+        return res.status(403).json({ error: 'Forbidden: Invalid or missing client key.' });
     }
 
     const { type, ids } = req.query;
@@ -68,7 +82,7 @@ const handler = async (req: VercelRequest, res: VercelResponse) => {
                 if (result[id] && result[id].success) {
                     return { id: id, name: result[id].data.name, imageUrl: result[id].data.header_image };
                 }
-                return { id, name: null, imageUrl: null };
+                return { id: id, name: null, imageUrl: null };
             });
             data = await Promise.all(gamePromises);
             

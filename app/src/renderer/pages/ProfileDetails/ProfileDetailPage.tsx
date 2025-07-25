@@ -1,4 +1,3 @@
-// src/renderer/pages/ProfileDetail/ProfileDetailPage.tsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Typography, CircularProgress, Card, CardContent, TextField, Avatar, Button, IconButton, List, ListItem, ListItemAvatar, ListItemText, Divider } from '@mui/material';
@@ -64,8 +63,6 @@ const ProfileDetailPage = () => {
             try {
                 await window.electronAPI.setProfileAvatar(profile.id, filePath);
                 enqueueSnackbar('Avatar updated!', { variant: 'success' });
-                // TODO: Refresh avatar image - this is tricky without a proper asset pipeline.
-                // A simple page reload might be the easiest way for now.
                 window.location.reload();
             } catch (e: any) {
                 enqueueSnackbar(`Failed to update avatar: ${e.message}`, { variant: 'error' });
