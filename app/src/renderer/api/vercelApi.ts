@@ -1,6 +1,15 @@
 import { ISteamAccount, IGame } from '../../shared/types';
 
-const API_BASE_URL = 'https://your-project-name.vercel.app/api/steam';
+const API_BASE_URL = 'https://unlink-nl.vercel.app/api/steam';
+const CLIENT_KEY = 'a4b8c1d6-e2f3-4a5b-8c9d-0e1f2a3b4c5d';
+
+const fetchWithAuth = (url: string) => {
+  return fetch(url, {
+    headers: {
+      'x-client-key': CLIENT_KEY
+    }
+  });
+};
 
 const vercelApi = {
   getEnrichedAccountData: async (accounts: ISteamAccount[]): Promise<ISteamAccount[]> => {
@@ -8,7 +17,7 @@ const vercelApi = {
     if (!accountIds) return [];
 
     try {
-      const response = await fetch(`${API_BASE_URL}?type=accounts&ids=${accountIds}`);
+      const response = await fetchWithAuth(`${API_BASE_URL}?type=accounts&ids=${accountIds}`);
       if (!response.ok) {
         throw new Error(`API request failed with status ${response.status}`);
       }
@@ -38,7 +47,7 @@ const vercelApi = {
     if (!gameIds) return [];
 
     try {
-        const response = await fetch(`${API_BASE_URL}?type=games&ids=${gameIds}`);
+        const response = await fetchWithAuth(`${API_BASE_URL}?type=games&ids=${gameIds}`);
         if (!response.ok) {
           throw new Error(`API request failed with status ${response.status}`);
         }

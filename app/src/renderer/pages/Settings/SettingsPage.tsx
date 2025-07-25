@@ -30,7 +30,6 @@ const SettingsPage = () => {
   const debouncedSave = useCallback(
     debounce((newSettings: IAppSettings) => {
       window.electronAPI.saveSettings(newSettings);
-      console.log('Settings autosaved');
     }, 500),
     []
   );

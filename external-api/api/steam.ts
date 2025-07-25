@@ -4,7 +4,17 @@ import fetch from 'node-fetch';
 const cache = new Map<string, { data: any, expiry: number }>();
 const CACHE_DURATION_MS = 10 * 60 * 1000;
 
+const STEAM_ID_64_BASE = BigInt('76561197960265728');
+
 const handler = async (req: VercelRequest, res: VercelResponse) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+    if (req.method === 'OPTIONS') {
+        return res.status(204).end();
+    }
+
     const { type, ids } = req.query;
     const STEAM_API_KEY = process.env.STEAM_API_KEY;
 
@@ -24,16 +34,30 @@ const handler = async (req: VercelRequest, res: VercelResponse) => {
     try {
         let data;
         if (type === 'accounts') {
-            const url = `http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${STEAM_API_KEY}&steamids=${ids}`;
+            const accountIds32 = ids.split(',');
+            const accountIds64 = accountIds32.map(id => (BigInt(id) + STEAM_ID_64_BASE).toString());
+            const reverseIdMap = new Map<string, string>();
+            accountIds64.forEach((id64, index) => {
+                reverseIdMap.set(id64, accountIds32[index]);
+            });
+            
+            const idsForApi = accountIds64.join(',');
+            const url = `http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${STEAM_API_KEY}&steamids=${idsForApi}`;
+            
             const response = await fetch(url);
             if (!response.ok) throw new Error(`Steam API returned ${response.status}`);
+            
             const result: any = await response.json();
-            data = result.response.players.map((player: any) => ({
-                id: player.steamid,
-                steamId: player.steamid,
-                steamName: player.personaname,
-                avatarUrl: player.avatarfull,
-            }));
+            
+            data = result.response.players.map((player: any) => {
+                const originalId = reverseIdMap.get(player.steamid);
+                return {
+                    id: originalId,
+                    steamId: player.steamid,
+                    steamName: player.personaname,
+                    avatarUrl: player.avatarfull,
+                }
+            });
 
         } else if (type === 'games') {
             const appIds = ids.split(',');
@@ -42,11 +66,7 @@ const handler = async (req: VercelRequest, res: VercelResponse) => {
                 const response = await fetch(url);
                 const result: any = await response.json();
                 if (result[id] && result[id].success) {
-                    return {
-                        id: id,
-                        name: result[id].data.name,
-                        imageUrl: result[id].data.header_image,
-                    };
+                    return { id: id, name: result[id].data.name, imageUrl: result[id].data.header_image };
                 }
                 return { id, name: null, imageUrl: null };
             });
