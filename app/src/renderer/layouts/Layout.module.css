@@ -1,0 +1,55 @@
+.appContainer {
+  display: flex;
+  height: 100vh;
+}
+
+.navbar {
+  display: flex;
+  flex-direction: column;
+  width: 220px;
+  background-color: var(--background-secondary);
+  padding: 1.5rem 0;
+  border-right: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: 600;
+  text-align: center;
+  margin: 0 0 2rem 0;
+  color: var(--accent-primary);
+}
+
+.navList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.navLink {
+  display: block;
+  padding: 0.75rem 1.5rem;
+  text-decoration: none;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  border-left: 3px solid transparent;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.navLink:hover {
+  background-color: var(--background-tertiary);
+}
+
+.activeLink {
+  background-color: rgba(106, 90, 205, 0.2);
+  color: white;
+  font-weight: 500;
+  border-left-color: var(--accent-primary);
+}
+
+.content {
+  flex-grow: 1;
+  padding: 2rem;
+  overflow-y: auto;
+}

@@ -1,0 +1,91 @@
+import { app, BrowserWindow } from 'electron';
+import path from 'path';
+import { getAppSettingsFolder } from './utils/paths';
+
+app.setPath('userData', path.join(getAppSettingsFolder(), 'userData'));
+app.setPath('logs', path.join(getAppSettingsFolder(), 'logs'));
+
+import { LocalService } from './services/LocalService';
+import { CliService } from './services/CliService';
+import { registerIpcHandlers } from './ipc-handlers';
+import { settingsStore } from './store/SettingsStore';
+import { profileStore } from './store/ProfileStore';
+
+declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
+declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
+
+let mainWindow: BrowserWindow | null = null;
+
+const createWindow = async () => {
+  mainWindow = new BrowserWindow({
+    width: 1200,
+    height: 850,
+    minWidth: 940,
+    minHeight: 600,
+    webPreferences: {
+      preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
+    },
+    show: false,
+  });
+
+  mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
+
+  const localService = new LocalService(mainWindow);
+  const cliService = new CliService(mainWindow);
+
+  await localService.initializeProfiles();
+
+  let profiles = profileStore.getAll();
+
+  if (profiles.length === 0) {
+    const mainProfile = {
+      id: 'main',
+      name: 'Main',
+      steamAccounts: [],
+    };
+
+    profileStore.add(mainProfile);
+    settingsStore.set('selectedProfileId', 'main');
+  }
+
+  if (profiles.length > 7) {
+    mainWindow.setSize(1250, 850);
+  }
+
+  const pathFromCli = await cliService.getSteamPath();
+  if (pathFromCli.success && pathFromCli.steamPath) {
+    settingsStore.set('steamPath', pathFromCli.steamPath!);
+  }
+
+  const steamPath = settingsStore.get('steamPath');
+  if (steamPath) {
+    const profileFromCli = await cliService.getSelectedProfile(steamPath);
+    if (profileFromCli.success && profileFromCli.currentProfile) {
+      settingsStore.set('selectedProfileId', profileFromCli.currentProfile);
+    }
+  }
+
+  registerIpcHandlers({
+    mainWindow: mainWindow!,
+    cliService,
+    localService
+  });
+
+  mainWindow.once('ready-to-show', () => {
+    mainWindow!.show();
+  });
+
+  mainWindow.on('closed', () => {
+    mainWindow = null;
+  });
+};
+
+app.on('ready', createWindow);
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') app.quit();
+});
+
+app.on('activate', () => {
+  if (BrowserWindow.getAllWindows().length === 0) createWindow();
+});
