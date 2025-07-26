@@ -53,7 +53,7 @@ The repository is organized as a mono-repo to keep all related code in one place
 ├── backend/              # The C# .NET solution for the backend CLI
 │   ├── UnlinkNL.Executor.sln
 │   └── UnlinkNL.Executor/
-└── vercel-api/           # The serverless function for communicating with Steam API
+└── external-api/           # The serverless function for communicating with Steam API
     └── api/
 ```
 
