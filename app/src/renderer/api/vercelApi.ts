@@ -28,7 +28,7 @@ const vercelApi = {
         return {
             ...localAccount,
             steamName: remoteData?.steamName || `User ${localAccount.id}`,
-            avatarUrl: remoteData?.avatarUrl || `https://i.pravatar.cc/250?u=${localAccount.id}`,
+            avatarUrl: remoteData?.avatarUrl || `https://api.dicebear.com/9.x/icons/svg?scale=75&backgroundType=gradientLinear&seed=${localAccount.id}`,
         };
       });
 
@@ -37,7 +37,7 @@ const vercelApi = {
       return accounts.map(account => ({
           ...account,
           steamName: `User ${account.id}`,
-          avatarUrl: `https://i.pravatar.cc/250?u=${account.id}`
+          avatarUrl: `https://api.dicebear.com/9.x/icons/svg?scale=75&backgroundType=gradientLinear&seed=${account.id}`
       }));
     }
   },
@@ -59,7 +59,7 @@ const vercelApi = {
             return {
                 ...localGame,
                 name: name,
-                imageUrl: remoteData?.imageUrl || `https://api.dicebear.com/9.x/icons/svg?seed=${name}`,
+                imageUrl: remoteData?.imageUrl || `https://api.dicebear.com/9.x/icons/svg?scale=75&backgroundType=gradientLinear&seed=${name}`,
             };
         });
 
@@ -70,7 +70,7 @@ const vercelApi = {
           return {
             ...game,
             name: name,
-            imageUrl: `https://api.dicebear.com/9.x/icons/svg?seed=${name}`
+            imageUrl: `https://api.dicebear.com/9.x/icons/svg?scale=75&backgroundType=gradientLinear&seed=${name}`
           }
         });
     }

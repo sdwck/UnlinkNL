@@ -129,7 +129,7 @@ const HomePage = () => {
           const isActive = settings?.selectedProfileId === profile.id;
           const avatarSrc = profile.avatar
             ? profile.avatar
-            : `https://i.pravatar.cc/400?u=${encodeURIComponent(profile.id)}`;
+            : `https://api.dicebear.com/9.x/icons/svg?scale=75&backgroundType=gradientLinear&seed=${encodeURIComponent(profile.id)}`;
           return (
             <Grid size={{ xs: 6, sm: 4, md: 3, lg: 2 }} key={profile.id}>
               <Card

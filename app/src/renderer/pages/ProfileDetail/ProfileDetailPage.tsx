@@ -87,7 +87,7 @@ const ProfileDetailPage = () => {
 
     const avatarSrc = profile.avatar
         ? profile.avatar
-        : `https://i.pravatar.cc/150?u=${profile.id}`;
+        : `https://api.dicebear.com/9.x/icons/svg?scale=75&backgroundType=gradientLinear&seed=${profile.id}`;
 
     return (
         <Box>

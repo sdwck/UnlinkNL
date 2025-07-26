@@ -130,7 +130,7 @@ const AutoCopySetupDialog = ({ open, onClose, onSave, profiles }: Props) => {
                         {profiles.map(profile => {
                             const imageUrl = profile.avatar
                                 ? profile.avatar
-                                : `https://i.pravatar.cc/250?u=${profile.id}`;
+                                : `https://api.dicebear.com/9.x/icons/svg?scale=75&backgroundType=gradientLinear&seed=${profile.id}`;
 
                             return (
                                 <Grid size={{ xs: 6, md: 4 }} key={profile.id}>
