@@ -1,7 +1,5 @@
 import { app, BrowserWindow } from 'electron';
 import path from 'path';
-import fs from 'fs';
-import { Readable } from 'stream';
 import { getAppSettingsFolder } from './utils/paths';
 
 app.setPath('userData', path.join(getAppSettingsFolder(), 'userData'));
@@ -17,19 +15,13 @@ declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
 
 let mainWindow: BrowserWindow | null = null;
-let appIsReady = false;
 
 const createWindow = async () => {
-  if (!appIsReady) {
-    await app.whenReady();
-    appIsReady = true;
-  }
-
   if (mainWindow) {
     mainWindow.focus();
     return;
   }
-
+  
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 850,
@@ -42,14 +34,19 @@ const createWindow = async () => {
     },
     show: false,
   });
+  
+  const localService = new LocalService(mainWindow);
+  const cliService = new CliService(mainWindow);
+  
+  registerIpcHandlers({
+    mainWindow: mainWindow!,
+    cliService,
+    localService
+  });
 
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 
-  const localService = new LocalService(mainWindow);
-  const cliService = new CliService(mainWindow);
-
   await localService.initializeProfiles();
-
   let profiles = profileStore.getAll();
   const initProfilesLength = profiles.length;
 
@@ -85,13 +82,7 @@ const createWindow = async () => {
       }
     }
   }
-
-  registerIpcHandlers({
-    mainWindow: mainWindow!,
-    cliService,
-    localService
-  });
-
+  
   mainWindow.once('ready-to-show', () => {
     mainWindow!.show();
   });
@@ -101,14 +92,18 @@ const createWindow = async () => {
   });
 };
 
-app.on('ready', createWindow);
+app.whenReady().then(() => {
+  createWindow();
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
+  app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
+  });
 });
 
-app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit();
   }
 });
