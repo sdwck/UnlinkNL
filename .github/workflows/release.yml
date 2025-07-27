@@ -38,8 +38,6 @@ jobs:
       - name: Rename Artifact
         shell: bash
         run: |
-          # Так как мы всегда на windows-latest, if не нужен.
-          # Просто выполняем одну команду.
           mv app/out/make/zip/win32/x64/*.zip app/out/make/zip/win32/x64/UnlinkNL-win32-x64.zip
 
       - name: Create GitHub Release and Upload Artifacts
