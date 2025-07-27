@@ -35,6 +35,8 @@ const createWindow = async () => {
     height: 850,
     minWidth: 940,
     minHeight: 600,
+    icon: path.join(__dirname, 'icon.ico'),
+    autoHideMenuBar: true,
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
     },

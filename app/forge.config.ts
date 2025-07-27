@@ -11,9 +11,16 @@ import { FuseV1Options, FuseVersion } from '@electron/fuses';
 import { mainConfig } from './webpack.main.config';
 import { rendererConfig } from './webpack.renderer.config';
 
+import path from 'path';
+
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
+    icon: path.resolve(__dirname, 'icon.ico'),
+    extraResource: [
+      './resources/UnlinkNL.Executor.exe',
+      './resources/Volumeid64.exe'
+    ]
   },
   rebuildConfig: {},
   makers: [

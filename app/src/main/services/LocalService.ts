@@ -4,7 +4,7 @@ import fs from 'fs/promises';
 import { IProfile, ISteamAccount } from '../../shared/types';
 import { profileStore } from '../store/ProfileStore';
 import { IGame } from '../../shared/types';
-import sharp from 'sharp';
+import { Jimp } from 'jimp';
 
 export class LocalService {
   constructor(private mainWindow: BrowserWindow) { }
@@ -122,21 +122,18 @@ export class LocalService {
 
   public async setProfileAvatar(profileId: string, sourcePath: string): Promise<void> {
     const profileDir = path.join(this.getProfilesRoot(), profileId);
-    const newAvatarFileName = `avatar.jpg`;
-    const destPath = path.join(profileDir, newAvatarFileName);
+    const destPath = path.join(profileDir, `avatar`);
 
     try {
       await fs.mkdir(profileDir, { recursive: true });
-      const processedImageBuffer = await sharp(sourcePath)
-        .resize(512, 512, { fit: 'cover' })
-        .jpeg({ quality: 90 })
-        .toBuffer();
+      const image = await Jimp.read(sourcePath);
 
-      await fs.writeFile(destPath, processedImageBuffer);
+      await image
+        .cover({ h: 512, w: 512 })
+        .write(`${destPath}.jpg`, { quality: 90, progressive: true });
 
-      const base64 = processedImageBuffer.toString('base64');
-      const avatarDataUrl = `data:image/jpeg;base64,${base64}`;
-      profileStore.update(profileId, { avatar: avatarDataUrl });
+      const base64 = await image.getBase64("image/jpeg", {quality: 90});
+      profileStore.update(profileId, { avatar: base64 });
     } catch (error) {
       this.log(`Failed to set avatar for profile ${profileId}: ${error.message}`);
       throw error;
