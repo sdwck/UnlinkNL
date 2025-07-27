@@ -1,6 +1,8 @@
 # UnlinkNL ![Main icon](assets/icon.svg)
 
-A powerful desktop application for managing and isolating Steam profiles. **[► Download Latest Release for Windows](https://github.com/sdwck/UnlinkNL/releases/latest/download/UnlinkNL-win32-x64.zip)**
+A powerful desktop application for managing and isolating Steam profiles. 
+
+**[► Download Latest Release for Windows](https://github.com/sdwck/UnlinkNL/releases/latest/download/UnlinkNL-win32-x64.zip)**
 
 The application is built on a robust architecture separating the user interface (Electron), the heavy-lifting logic (C# Backend CLI), and external data fetching (Vercel Serverless API).
 
