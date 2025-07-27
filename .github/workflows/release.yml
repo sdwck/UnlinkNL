@@ -48,7 +48,6 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            app/out/make/squirrel.windows/x64/*.exe
             app/out/make/zip/win32/x64/UnlinkNL-win32-x64.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
