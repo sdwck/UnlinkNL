@@ -35,6 +35,13 @@ jobs:
         run: npm run make
         working-directory: ./app
 
+      - name: Rename Artifact
+        shell: bash
+        run: |
+          # Так как мы всегда на windows-latest, if не нужен.
+          # Просто выполняем одну команду.
+          mv app/out/make/zip/win32/x64/*.zip app/out/make/zip/win32/x64/UnlinkNL-win32-x64.zip
+
       - name: Create GitHub Release and Upload Artifacts
         uses: softprops/action-gh-release@v2
         with:
@@ -43,10 +50,7 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            app/out/make/**/*.exe
-            app/out/make/**/*.dmg
-            app/out/make/**/*.deb
-            app/out/make/**/*.zip
-            app/out/make/**/*.AppImage
+            app/out/make/squirrel.windows/x64/*.exe
+            app/out/make/zip/win32/x64/UnlinkNL-win32-x64.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
