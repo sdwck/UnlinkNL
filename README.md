@@ -2,6 +2,11 @@
 
 A powerful desktop application for managing and isolating Steam profiles. 
 
+## Purpose
+
+UnlinkNL is designed for players who want to use multiple Steam accounts while avoiding any hidden links between them.  
+This can help prevent hidden matchmaking ratings or other account-based tracking in games like Dota 2 or CS:GO, ensuring a truly fresh start on each profile.
+
 **[► Download Latest Release for Windows](https://github.com/sdwck/UnlinkNL/releases/latest/download/UnlinkNL-win32-x64.zip)**
 
 The application is built on a robust architecture separating the user interface (Electron), the heavy-lifting logic (C# Backend CLI), and external data fetching (Vercel Serverless API).

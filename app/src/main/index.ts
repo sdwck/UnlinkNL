@@ -21,7 +21,7 @@ const createWindow = async () => {
     mainWindow.focus();
     return;
   }
-  
+
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 850,
@@ -32,12 +32,12 @@ const createWindow = async () => {
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
     },
-    show: false,
+    show: true,
   });
-  
+
   const localService = new LocalService(mainWindow);
   const cliService = new CliService(mainWindow);
-  
+
   registerIpcHandlers({
     mainWindow: mainWindow!,
     cliService,
@@ -45,6 +45,7 @@ const createWindow = async () => {
   });
 
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
+  mainWindow!.show();
 
   await localService.initializeProfiles();
   let profiles = profileStore.getAll();
@@ -82,10 +83,6 @@ const createWindow = async () => {
       }
     }
   }
-  
-  mainWindow.once('ready-to-show', () => {
-    mainWindow!.show();
-  });
 
   mainWindow.on('closed', () => {
     mainWindow = null;
