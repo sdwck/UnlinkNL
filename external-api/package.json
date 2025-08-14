@@ -4,18 +4,29 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^24.1.0",
+    "@types/react": "^19.1.10",
     "@vercel/node": "^5.3.6",
     "typescript": "^5.8.3"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.3.1",
+    "@mui/material": "^7.3.1",
     "@types/node-fetch": "^2.6.12",
-    "node-fetch": "^2.7.0"
+    "next": "^15.4.6",
+    "node-fetch": "^2.7.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-player": "^2.16.1"
   }
 }
