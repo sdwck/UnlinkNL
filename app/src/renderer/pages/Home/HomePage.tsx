@@ -163,17 +163,35 @@ const HomePage = () => {
                     alt={profile.name}
                     sx={{ height: '100%', width: '100%', objectFit: 'cover' }}
                   />
-                  <Fade in={hoveredProfileId === profile.id || isActive || isUnlinking}>
-                    <Box sx={{
-                      position: 'absolute', bottom: 0, left: 0,
-                      width: '100%', color: 'white',
-                      background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 100%)',
-                      textAlign: 'center', p: 1,
-                    }}>
-                      <Typography variant="h6">{profile.name}</Typography>
-                      {isUnlinking && isActive && <CircularProgress size={20} sx={{ position: 'absolute', top: 8, right: 8 }} />}
+                    <Box
+                    sx={{
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      width: '100%',
+                      textAlign: 'center',
+                      p: 1,
+                      color: 'white',
+                      zIndex: 1,
+                    }}
+                    >
+                    <Fade in={hoveredProfileId === profile.id || isActive || isUnlinking}>
+                      <Box
+                      sx={{
+                        position: 'absolute',
+                        inset: 0,
+                        background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 100%)',
+                        zIndex: -1,
+                      }}
+                      />
+                    </Fade>
+                    <Typography variant="h6" sx={{textShadow: '0 0 2px #000, 0 0 4px #000'}}>
+                      {profile.name}
+                    </Typography>
+                    {isUnlinking && isActive && (
+                      <CircularProgress size={20} sx={{ position: 'absolute', top: 8, right: 8 }} />
+                    )}
                     </Box>
-                  </Fade>
                 </CardActionArea>
               </Card>
             </Grid>
