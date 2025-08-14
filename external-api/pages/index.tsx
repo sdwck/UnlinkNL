@@ -102,6 +102,7 @@ export default function Home() {
       <CssBaseline />
       <Head>
         <title>{PROJECT_NAME}</title>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
         <meta name="viewport" content="initial-scale=1, width=device-width" />
         <meta name="description" content={TAGLINE} />
         <meta property="og:title" content={PROJECT_NAME} />
