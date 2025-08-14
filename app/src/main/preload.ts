@@ -45,7 +45,8 @@ export const electronAPI = {
     const handler = (event: IpcRendererEvent, result: any) => callback(result);
     ipcRenderer.on('unlink:finish', handler);
     return () => ipcRenderer.removeListener('unlink:finish', handler);
-  }
+  },
+  openExternal: (url: string): Promise<void> => ipcRenderer.invoke('app:open-external', url),
 };
 
 contextBridge.exposeInMainWorld('electronAPI', electronAPI);

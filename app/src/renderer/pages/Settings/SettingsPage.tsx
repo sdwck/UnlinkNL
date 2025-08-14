@@ -24,7 +24,7 @@ const SettingsPage = () => {
   const [profiles, setProfiles] = useState<IProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSetupDialogOpen, setIsSetupDialogOpen] = useState(false);
-  
+
   const { enqueueSnackbar } = useSnackbar();
 
   const debouncedSave = useCallback(
@@ -62,12 +62,12 @@ const SettingsPage = () => {
   const handleSettingsChange = (newValues: Partial<IAppSettings>) => {
     setSettings(prev => prev ? { ...prev, ...newValues } : null);
   };
-  
+
   const handleSelectSteamPath = async () => {
-      const path = await window.electronAPI.selectSteamPathDialog();
-      if (path) {
-          handleSettingsChange({ steamPath: path });
-      }
+    const path = await window.electronAPI.selectSteamPathDialog();
+    if (path) {
+      handleSettingsChange({ steamPath: path });
+    }
   };
 
   if (loading) {
@@ -77,16 +77,16 @@ const SettingsPage = () => {
   if (!settings) {
     return <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><Typography color="error">Could not load settings.</Typography></Box>;
   }
-  
+
   const isAutoCopyConfigured = settings.refProfileName && settings.refAccountId && settings.appId;
 
   return (
     <Box>
       <Typography variant="h4" component="h1" sx={{ mb: 3 }}>Settings</Typography>
-      
+
       <Card variant="outlined">
         <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 3.5 }}>
-          
+
           <Box>
             <Typography variant="h6">Process Options</Typography>
             <FormGroup sx={{ mt: 1.5, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 0.5 }}>
@@ -98,16 +98,16 @@ const SettingsPage = () => {
               <FormControlLabel control={<Switch checked={settings.startSteam} onChange={(e) => handleSettingsChange({ startSteam: e.target.checked })} />} label="Start Steam After" />
             </FormGroup>
           </Box>
-          
+
           <Divider />
 
           <Box>
             <Typography variant="h6" sx={{ mb: 1.5 }}>Auto-Copy Settings</Typography>
             <Card variant="outlined" sx={{ bgcolor: 'action.hover', p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap' }}>
-                <FormControlLabel 
-                  control={<Switch checked={settings.autoCopySettings} onChange={(e) => handleSettingsChange({ autoCopySettings: e.target.checked })} />} 
-                  label={<Typography variant="body1" fontWeight={500}>Enable Auto-Copy</Typography>}
-                />
+              <FormControlLabel
+                control={<Switch checked={settings.autoCopySettings} onChange={(e) => handleSettingsChange({ autoCopySettings: e.target.checked })} />}
+                label={<Typography variant="body1" fontWeight={500}>Enable Auto-Copy</Typography>}
+              />
               <Button
                 variant="contained"
                 onClick={() => setIsSetupDialogOpen(true)}
@@ -126,17 +126,17 @@ const SettingsPage = () => {
               </Button>
             </Card>
             {settings.autoCopySettings && (
-                <Alert severity={isAutoCopyConfigured ? 'success' : 'warning'} sx={{ mt: 1.5 }} variant="outlined">
-                    {isAutoCopyConfigured 
-                        ? `Ready to copy for AppID ${settings.appId} from ${settings.refProfileName}/${settings.refAccountId}`
-                        : 'Configuration required. Click "Configure" to set up source profile, account, and game.'
-                    }
-                </Alert>
+              <Alert severity={isAutoCopyConfigured ? 'success' : 'warning'} sx={{ mt: 1.5 }} variant="outlined">
+                {isAutoCopyConfigured
+                  ? `Ready to copy for AppID ${settings.appId} from ${settings.refProfileName}/${settings.refAccountId}`
+                  : 'Configuration required. Click "Configure" to set up source profile, account, and game.'
+                }
+              </Alert>
             )}
           </Box>
-          
+
           <Divider />
-          
+
           <Box>
             <Typography variant="h6">Steam Path</Typography>
             <TextField
@@ -158,13 +158,34 @@ const SettingsPage = () => {
 
         </CardContent>
       </Card>
-      
+
       <AutoCopySetupDialog
         open={isSetupDialogOpen}
         onClose={() => setIsSetupDialogOpen(false)}
         onSave={(data) => handleSettingsChange(data)}
         profiles={profiles}
       />
+
+      <Box sx={{
+        position: 'absolute',
+        bottom: 0,
+        right: 18,
+        textAlign: 'center',
+        color: 'text.secondary',
+        fontSize: '0.875rem',
+        p: 2,
+      }}>
+        <Typography variant="body2">
+          Made with <span style={{ color: 'red' }}>❤</span> by KNL &{' '}
+          <Box
+            component="span"
+            sx={{ textDecoration: 'underline', cursor: 'pointer', color: 'inherit' }}
+            onClick={() => window.electronAPI.openExternal('https://github.com/sdwck')}
+          >
+            sdwck
+          </Box>
+        </Typography>
+      </Box>
     </Box>
   );
 };

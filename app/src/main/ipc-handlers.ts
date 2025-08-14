@@ -6,6 +6,7 @@ import { IAppSettings, IProfile } from '../shared/types';
 import { LocalService } from './services/LocalService';
 import fs from 'fs/promises';
 import path from 'path';
+import { shell } from 'electron';
 
 interface AppServices {
     mainWindow: BrowserWindow;
@@ -138,5 +139,11 @@ export function registerIpcHandlers(services: AppServices) {
             dialog.showErrorBox('Invalid Folder', `steam.exe not found in "${selectedPath}".`);
             return null;
         }
+    });
+
+    ipcMain.handle('app:open-external', async (event, url: string) => {
+        shell.openExternal(url).catch(err => {
+            console.error(`Failed to open external URL: ${url}`, err);
+        });
     });
 }
