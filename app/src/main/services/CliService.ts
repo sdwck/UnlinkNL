@@ -10,6 +10,7 @@ import { profileStore } from '../store/ProfileStore';
 export interface CliRunOptions {
     previousProfile: IProfile;
     newProfile: IProfile;
+    overwriteAutoCopySettings?: boolean;
 }
 
 interface CliLog {
@@ -64,7 +65,7 @@ export class CliService {
             args.push(`--newProfileName=${options.newProfile.id}`);
         }
 
-        if (settings.autoCopySettings && options) {
+        if ((options?.overwriteAutoCopySettings ?? (options && settings.autoCopySettings))) {
             args.push('--autoCopySettings');
             if (settings.appId) args.push(`--appId=${settings.appId}`);
             if (settings.refAccountId) args.push(`--refAccountId=${settings.refAccountId}`);

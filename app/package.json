@@ -1,8 +1,8 @@
 {
   "name": "unlink-nl",
-  "productName": "unlink-nl",
-  "version": "1.1.0",
-  "description": "My Electron application description",
+  "productName": "UnlinkNL",
+  "version": "1.2.0",
+  "description": "This app prevents hidden matchmaking ratings or other account-based tracking in Steam games, ensuring a truly fresh start on each profile.",
   "main": ".webpack/main",
   "scripts": {
     "start": "electron-forge start",
@@ -11,7 +11,14 @@
     "publish": "electron-forge publish",
     "lint": "eslint --ext .ts,.tsx ."
   },
-  "keywords": [],
+  "keywords": [
+    "Steam",
+    "matchmaking",
+    "privacy",
+    "gaming",
+    "unlink",
+    "account"
+  ],
   "author": {
     "name": "sdwck",
     "email": "sdwcktarakanov@gmail.com"

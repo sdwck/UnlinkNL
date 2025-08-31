@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
 import {
@@ -22,6 +22,13 @@ const HomePage = () => {
   const [contextMenu, setContextMenu] = useState<{ anchor: null | HTMLElement, profile: IProfile | null }>({ anchor: null, profile: null });
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean, profile: IProfile | null }>({ open: false, profile: null });
   const [imageRefreshKey, setImageRefreshKey] = useState(Date.now());
+  const isAutoCopyConfigured = useMemo(() => {
+    return settings?.appId !== null && settings?.refAccountId !== null && settings?.refProfileName !== null;
+  }, [settings]);
+
+  const isAutoCopyEnabled = useMemo(() => {
+    return isAutoCopyConfigured && settings?.autoCopySettings;
+  }, [isAutoCopyConfigured, settings]);
 
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
@@ -83,7 +90,7 @@ const HomePage = () => {
     };
   }, [fetchData]);
 
-  const handleProfileSelect = async (targetProfile: IProfile) => {
+  const handleProfileSelect = async (targetProfile: IProfile, overwriteAutoCopySettings?: boolean) => {
     if (!settings || isUnlinking || targetProfile.id === settings.selectedProfileId) {
       return;
     }
@@ -92,7 +99,7 @@ const HomePage = () => {
       enqueueSnackbar(`Could not find previous profile with id: ${settings.selectedProfileId}`, { variant: 'error' });
       return;
     }
-    window.electronAPI.runUnlink({ previousProfile, newProfile: targetProfile });
+    window.electronAPI.runUnlink({ previousProfile, newProfile: targetProfile, overwriteAutoCopySettings });
   };
 
   const handleContextMenu = (event: React.MouseEvent<HTMLDivElement>, profile: IProfile) => {
@@ -228,12 +235,17 @@ const HomePage = () => {
       <ProfileContextMenu
         anchorEl={contextMenu.anchor}
         onClose={handleCloseContextMenu}
+        isAutoCopyEnabled={isAutoCopyEnabled}
+        onAutoCopy={isAutoCopyConfigured ? () => {
+          handleProfileSelect(contextMenu.profile, !isAutoCopyEnabled);
+          handleCloseContextMenu();
+        } : null}
         onEdit={() => {
-          if (contextMenu.profile) navigate(`/profiles/${contextMenu.profile.id}`);
+          navigate(`/profiles/${contextMenu.profile.id}`);
           handleCloseContextMenu();
         }}
         onDelete={() => {
-          if (contextMenu.profile) setDeleteDialog({ open: true, profile: contextMenu.profile });
+          setDeleteDialog({ open: true, profile: contextMenu.profile });
           handleCloseContextMenu();
         }}
       />

@@ -2,15 +2,18 @@ import React from 'react';
 import { Menu, MenuItem, ListItemIcon, ListItemText, Divider } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/DeleteForever';
+import { PlayArrow } from '@mui/icons-material';
 
 interface Props {
   anchorEl: null | HTMLElement;
   onClose: () => void;
+  isAutoCopyEnabled: boolean | null;
+  onAutoCopy?: () => void;
   onEdit: () => void;
   onDelete: () => void;
 }
 
-const ProfileContextMenu = ({ anchorEl, onClose, onEdit, onDelete }: Props) => {
+const ProfileContextMenu = ({ anchorEl, onClose, isAutoCopyEnabled, onAutoCopy, onEdit, onDelete }: Props) => {
   return (
     <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={onClose} PaperProps={{
       sx: {
@@ -22,6 +25,11 @@ const ProfileContextMenu = ({ anchorEl, onClose, onEdit, onDelete }: Props) => {
         }
       },
     }}>
+      <MenuItem disabled={onAutoCopy === null ? true : false} onClick={onAutoCopy} sx={{ '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.04)' }, paddingTop: '8px', paddingBottom: '8px' }}>
+        <ListItemIcon><PlayArrow fontSize="small" /></ListItemIcon>
+        <ListItemText>{isAutoCopyEnabled ? 'Without Auto-Copy' : 'Auto-Copy'}</ListItemText>
+      </MenuItem>
+      <Divider sx={{ my: 0.5, borderColor: 'rgba(255, 255, 255, 0.12)', margin: '0 !important' }} />
       <MenuItem onClick={onEdit} sx={{ '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.04)' }, paddingTop: '8px', paddingBottom: '8px' }}>
         <ListItemIcon><EditIcon fontSize="small" /></ListItemIcon>
         <ListItemText>Edit Profile</ListItemText>
