@@ -1,7 +1,7 @@
 {
   "name": "unlink-nl",
   "productName": "UnlinkNL",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "This app prevents hidden matchmaking ratings or other account-based tracking in Steam games, ensuring a truly fresh start on each profile.",
   "main": ".webpack/main",
   "scripts": {
